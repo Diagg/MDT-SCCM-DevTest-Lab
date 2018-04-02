@@ -1,0 +1,91 @@
+<job id="ZTISuspend">
+	<script language="VBScript" src="ZTIUtility.vbs"/>
+	<script language="VBScript">
+
+' // ***************************************************************************
+' // 
+' // Copyright (c) Diagg from www.OSD-Couture.com
+' // 
+' //
+' // File:      ZTISuspend.wsf
+' // 
+' // Version:   3.0
+' // 
+' // Purpose:   Upgrade current version of Windows to a New one.
+' // 
+' // Usage:     Usage: serviceUI.exe -process:TSProgressUI.exe %SYSTEMROOT%\System32\wscript.exe “%DeployRoot%\Scripts\ZTISuspend.wsf”
+' // 
+' // 
+' // History:	09/12/2014 - 1.0 - Initial release
+' //   			15/12/2014 - 2.0 - Added Powershell Support   
+'//  			11/07/2016 - 3.0 - Back ported to be used in MDT TS
+' //			30/03/2018 - 3.1 - Added Logging.
+' //                                        
+' // 
+' // 
+' // ***************************************************************************
+
+Option Explicit
+RunNewInstance
+
+
+'//----------------------------------------------------------------------------
+'//  Main Class
+'//----------------------------------------------------------------------------
+
+Class ZTISuspend
+
+	
+	'//----------------------------------------------------------------------------
+	'//  Class instance variable declarations
+	'//----------------------------------------------------------------------------
+
+	' No instance variables are required
+
+
+	'//----------------------------------------------------------------------------
+	'//  Constructor to initialize needed global objects
+	'//----------------------------------------------------------------------------
+
+	Private Sub Class_Initialize
+
+		' No initialization is required
+
+	End Sub
+	
+	
+	'//----------------------------------------------------------------------------
+	'//  Main routine
+	'//----------------------------------------------------------------------------
+
+	Function Main
+		
+		Dim TSProgressUI
+
+		'register dll
+		oLogging.CreateEntry "Registering TsProgressUI.exe", LogTypeInfo
+		'oShell.Run oEnvironment.item("DeployRoot") &  "\Tools\" & oEnvironment.item("Architecture") & "\TsProgressUI.exe /Register",0, true
+		Set TsProgressUI = CreateObject("Microsoft.SMS.TsProgressUI")
+		
+		'hide the Task Sequence Progress window
+		TsProgressUI.CloseProgressDialog
+
+		'Popup Message
+		oLogging.CreateEntry "Launching System Command Prompt !  ", LogTypeInfo
+		oshell.run "cmd.exe /K whoami",1,false
+		If oFso.FileExists("C:\Program Files (x86)\PowerGUI\ScriptEditor.exe") Then
+			oLogging.CreateEntry "Launching PowerGUI !  ", LogTypeInfo
+			oshell.run """C:\Program Files (x86)\PowerGUI\ScriptEditor.exe""",1,True
+		Else
+			oLogging.CreateEntry "Launching PowerShell ISE !  ", LogTypeInfo
+			oshell.run "C:\Windows\system32\WindowsPowerShell\v1.0\PowerShell_ISE.exe",1,True
+		End If
+		'oLogging.CreateEntry " Launching stop box ! ", LogTypeInfo
+		'MsgBox "The task sequence is now paused." & chr(13) & "To resume the task sequence please click on OK.", 64,"Task Sequence PAUSED!"
+
+		wscript.quit(0)
+
+	End Function
+End Class
+	</script>
+</job>
